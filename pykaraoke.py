@@ -142,7 +142,7 @@ from pykconstants import *
 from pykenv import env
 import pycdg, pympg, pykar, pykversion, pykdb
 import codecs
-import cPickle
+import pickle
 from pykmanager import manager
 import random
 import performer_prompt as PerformerPrompt
@@ -169,7 +169,7 @@ class wxBusyCancelDialog(wx.ProgressDialog, pykdb.BusyCancelDialog):
         """ Called from time to time to update the progress display. """
 
         cont = self.Update(int(progress * 100), label)
-        if isinstance(cont, types.TupleType):
+        if isinstance(cont, tuple):
             # Later versions of wxPython return a tuple from the above.
             cont, skip = cont
 
@@ -400,7 +400,7 @@ class DatabaseSetupWindow (wx.Frame):
     # User changed a checkbox, just do them all again
     def OnFileExtChanged(self, event):
         ignored_ext_list = []
-        for ext, cb in self.extCheckBoxes.items():
+        for ext, cb in list(self.extCheckBoxes.items()):
             if not cb.IsChecked():
                 ignored_ext_list.append(ext)
         self.KaraokeMgr.SongDB.Settings.IgnoredExtensions = ignored_ext_list
@@ -619,7 +619,7 @@ class ConfigWindow (wx.Frame):
         gsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.SampleRate = wx.ComboBox(
             panel, -1, value = str(settings.SampleRate),
-            choices = map(str, settings.SampleRates))
+            choices = list(map(str, settings.SampleRates)))
         gsizer.Add(self.SampleRate, flag = wx.EXPAND)
 
         text = wx.StaticText(panel, -1, "Buffer size (ms):")
@@ -681,7 +681,7 @@ class ConfigWindow (wx.Frame):
         gsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
         self.MIDISampleRate = wx.ComboBox(
             panel, -1, value = str(settings.MIDISampleRate),
-            choices = map(str, settings.SampleRates))
+            choices = list(map(str, settings.SampleRates)))
         gsizer.Add(self.MIDISampleRate, flag = wx.EXPAND)
         karsizer.Add(gsizer, flag = wx.EXPAND | wx.LEFT | wx.RIGHT, border = 10)
 
@@ -722,7 +722,7 @@ class ConfigWindow (wx.Frame):
         text = wx.StaticText(panel, -1, "Zoom:")
         hsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
         selection = settings.Zoom.index(settings.CdgZoom)
-        choices = map(lambda z: '%s: %s' % (z, settings.ZoomDesc[z]), settings.Zoom)
+        choices = ['%s: %s' % (z, settings.ZoomDesc[z]) for z in settings.Zoom]
         self.CdgZoom = wx.Choice(panel, -1, choices = choices)
         self.CdgZoom.SetSelection(selection)
         hsizer.Add(self.CdgZoom, flag = wx.EXPAND, proportion = 1)
@@ -1613,7 +1613,7 @@ class FileTree (wx.Panel):
 
         # Populate the tree control, directories then files
         for item in dir_list:
-            if isinstance(item, types.StringType):
+            if isinstance(item, bytes):
                 item = item.decode(settings.FilesystemCoding)
             try:
                 node = self.FileTree.AppendItem(root_node, item, image=self.FolderClosedIconIndex)
@@ -1622,7 +1622,7 @@ class FileTree (wx.Panel):
 
             self.FileTree.SetItemHasChildren(node, True)
         for item in file_list:
-            if isinstance(item, types.StringType):
+            if isinstance(item, bytes):
                 item = item.decode(settings.FilesystemCoding)
             try:
                 node = self.FileTree.AppendItem(root_node, item, image=self.FileIconIndex)
@@ -1768,7 +1768,7 @@ class SongStructDataObject(wx.PyDataObjectSimple):
         self.extra_data = extra_data
 
         # Pickle both songs and extra_data
-        self.data = cPickle.dumps((self.songs, self.extra_data))
+        self.data = pickle.dumps((self.songs, self.extra_data))
 
     def GetDataSize(self):
         """Returns number of bytes required to store the data in the
@@ -1791,7 +1791,7 @@ class SongStructDataObject(wx.PyDataObjectSimple):
         # Cast the data object explicitly to a str type, in case the
         # drag-and-drop operation elevated it to a unicode string.
         self.data = str(data)
-        self.songs, self.extra_data = cPickle.loads(self.data)
+        self.songs, self.extra_data = pickle.loads(self.data)
 
 # We store the object currently being dragged here, to work around an
 # apparent bug in wxPython that does not call
@@ -3782,7 +3782,7 @@ class PyKaraokeManager:
     # for the GUI thread, actually handled by ErrorPopupEventHandler()
     def ErrorPopupCallback(self, ErrorString):
         if not self.gui:
-            print ErrorString
+            print(ErrorString)
             return
         # We use the extra data storage we got by subclassing WxPyEvent to
         # pass data to the event handler (the error string).
@@ -3887,7 +3887,7 @@ class PyKaraokeApp(wx.App):
 
 def main():
     # Display license
-    print "PyKaraoke is free software; you can redistribute it and/or\nmodify it under the terms of the GNU Lesser General Public\nLicense as published by the Free Software Foundation; either\nversion 2.1 of the License, or (at your option) any later version.\n\nPyKaraoke is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Lesser General Public License for more details.\n\nYou should have received a copy of the GNU Lesser General Public\nLicense along with this library; if not, write to the Free Software\nFoundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n"
+    print("PyKaraoke is free software; you can redistribute it and/or\nmodify it under the terms of the GNU Lesser General Public\nLicense as published by the Free Software Foundation; either\nversion 2.1 of the License, or (at your option) any later version.\n\nPyKaraoke is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Lesser General Public License for more details.\n\nYou should have received a copy of the GNU Lesser General Public\nLicense along with this library; if not, write to the Free Software\nFoundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n")
 
     MyApp = PyKaraokeApp(False)
 

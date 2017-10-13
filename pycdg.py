@@ -265,7 +265,7 @@ class cdgPlayer(pykPlayer):
 
         aux = aux_c
         if not aux or not manager.settings.CdgUseC:
-            print "Using Python implementation of CDG interpreter."
+            print("Using Python implementation of CDG interpreter.")
             aux = aux_python
 
         # Open the cdg and sound files
@@ -282,7 +282,7 @@ class cdgPlayer(pykPlayer):
             try:
                 manager.OpenAudio(*audioProperties)
                 audio_path = self.soundFileData.GetFilepath()
-                if type(audio_path) == unicode:
+                if type(audio_path) == str:
                     audio_path = audio_path.encode(sys.getfilesystemencoding())
                 pygame.mixer.music.load(audio_path)
             except:
@@ -485,7 +485,7 @@ class cdgPlayer(pykPlayer):
         try:
             import mutagen.mp3
         except:
-            print "Mutagen not available, will not be able to determine extra MP3 information."
+            print("Mutagen not available, will not be able to determine extra MP3 information.")
             self.soundLength = 0
             return None
 

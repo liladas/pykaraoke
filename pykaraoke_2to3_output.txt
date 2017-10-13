@@ -1,0 +1,1019 @@
+RefactoringTool: Skipping optional fixer: buffer
+RefactoringTool: Skipping optional fixer: idioms
+RefactoringTool: Skipping optional fixer: set_literal
+RefactoringTool: Skipping optional fixer: ws_comma
+RefactoringTool: No changes to pykaraoke/performer_prompt.py
+RefactoringTool: Refactored pykaraoke/pycdg.py
+RefactoringTool: Refactored pykaraoke/pycdgAux.py
+RefactoringTool: Refactored pykaraoke/pykar.py
+--- pykaraoke/pycdg.py	(original)
++++ pykaraoke/pycdg.py	(refactored)
+@@ -265,7 +265,7 @@
+ 
+         aux = aux_c
+         if not aux or not manager.settings.CdgUseC:
+-            print "Using Python implementation of CDG interpreter."
++            print("Using Python implementation of CDG interpreter.")
+             aux = aux_python
+ 
+         # Open the cdg and sound files
+@@ -282,7 +282,7 @@
+             try:
+                 manager.OpenAudio(*audioProperties)
+                 audio_path = self.soundFileData.GetFilepath()
+-                if type(audio_path) == unicode:
++                if type(audio_path) == str:
+                     audio_path = audio_path.encode(sys.getfilesystemencoding())
+                 pygame.mixer.music.load(audio_path)
+             except:
+@@ -485,7 +485,7 @@
+         try:
+             import mutagen.mp3
+         except:
+-            print "Mutagen not available, will not be able to determine extra MP3 information."
++            print("Mutagen not available, will not be able to determine extra MP3 information.")
+             self.soundLength = 0
+             return None
+ 
+--- pykaraoke/pycdgAux.py	(original)
++++ pykaraoke/pycdgAux.py	(refactored)
+@@ -148,13 +148,13 @@
+         self.__cdgSurfarray = N.zeros((CDG_FULL_WIDTH, CDG_FULL_HEIGHT))
+ 
+         # Start with all tiles requiring update
+-        self.__updatedTiles = 0xFFFFFFFFL
++        self.__updatedTiles = 0xFFFFFFFF
+ 
+     def MarkTilesDirty(self):
+         """ Marks all the tiles dirty, so that the next call to
+         GetDirtyTiles() will return the complete list of tiles. """
+         
+-        self.__updatedTiles = 0xFFFFFFFFL
++        self.__updatedTiles = 0xFFFFFFFF
+ 
+     def GetDirtyTiles(self):
+         """ Returns a list of (row, col) tuples, corresponding to all
+@@ -219,7 +219,7 @@
+ 
+     # Read the next CDG command from the file (24 bytes each)
+     def __getNextPacket(self):
+-        packetData = map(ord, self.__cdgData[self.__cdgDataPos : self.__cdgDataPos + 24])
++        packetData = list(map(ord, self.__cdgData[self.__cdgDataPos : self.__cdgDataPos + 24]))
+         self.__cdgDataPos += 24
+         if (len(packetData) == 24):
+             return CdgPacket(packetData)
+@@ -307,7 +307,7 @@
+         self.__cdgSurfarray = N.zeros([CDG_FULL_WIDTH, CDG_FULL_HEIGHT])
+         self.__cdgSurfarray[:,:] = self.__cdgSurfarray[:,:] + self.__cdgColourTable[colour]
+ 
+-        self.__updatedTiles = 0xFFFFFFFFL
++        self.__updatedTiles = 0xFFFFFFFF
+ 
+     # Border Preset (clear the border area only) 
+     def __cdgBorderPreset (self, packd):
+@@ -380,7 +380,7 @@
+             # Changing the screen shift.
+             self.__hOffset = min(hOffset, 5)
+             self.__vOffset = min(vOffset, 11)
+-            self.__updatedTiles = 0xFFFFFFFFL
++            self.__updatedTiles = 0xFFFFFFFF
+ 
+         if hScrollLeftPixels == 0 and \
+            hScrollRightPixels == 0 and \
+@@ -428,7 +428,7 @@
+         
+         # We have modified our local cdgSurfarray. This will be blitted to
+         # the screen by cdgDisplayUpdate()
+-        self.__updatedTiles = 0xFFFFFFFFL
++        self.__updatedTiles = 0xFFFFFFFF
+ 
+     # Set one of the colour indeces as transparent. Don't actually do anything with this
+     # at the moment, as there is currently no mechanism for overlaying onto a movie file.
+@@ -469,7 +469,7 @@
+         #self.__cdgSurfarray.flat[:] =  map(self.__cdgColourTable.__getitem__, self.__cdgPixelColours.flat)
+ 
+         # Update the screen for any colour changes
+-        self.__updatedTiles = 0xFFFFFFFFL
++        self.__updatedTiles = 0xFFFFFFFF
+         return
+ 
+     # Set the colours for a 12x6 tile. The main CDG command for display data
+--- pykaraoke/pykar.py	(original)
++++ pykaraoke/pykar.py	(refactored)
+@@ -142,7 +142,7 @@
+ from pykplayer import pykPlayer
+ from pykenv import env
+ from pykmanager import manager
+-import pygame, sys, os, struct, cStringIO
++import pygame, sys, os, struct, io
+ 
+ # At what percentage of the screen height should we try to keep the
+ # current singing cursor?  33% keeps it on the top third, 50% keeps it
+@@ -393,9 +393,9 @@
+                 ts.advanceToClick(track_desc.FirstNoteClick)
+                 track_desc.FirstNoteMs = ts.ms
+                 if debug:
+-                    print "T%s first note at %s clicks, %s ms" % (
++                    print("T%s first note at %s clicks, %s ms" % (
+                         track_desc.TrackNum, track_desc.FirstNoteClick,
+-                        track_desc.FirstNoteMs)
++                        track_desc.FirstNoteMs))
+             if track_desc.LastNoteClick != None:
+                 ts.advanceToClick(track_desc.LastNoteClick)
+                 track_desc.LastNoteMs = ts.ms
+@@ -536,7 +536,7 @@
+     def write(self):
+         # Outputs the lyrics, one line at a time.
+         for syllable in self.list:
+-            print "%s(%s) %s %s" % (syllable.ms, syllable.click, syllable.line, repr(syllable.text))
++            print("%s(%s) %s %s" % (syllable.ms, syllable.click, syllable.line, repr(syllable.text)))
+ 
+ def midiParseData(midiData, ErrorNotifyCallback, Encoding):
+ 
+@@ -545,7 +545,7 @@
+     midifile.text_encoding = Encoding
+ 
+     # Open the file
+-    filehdl = cStringIO.StringIO(midiData)
++    filehdl = io.StringIO(midiData)
+ 
+     # Check it's a MThd chunk
+     packet = filehdl.read(8)
+@@ -586,7 +586,7 @@
+             midifile.trackList.append(track_desc)
+             # Debug out the first note for this track
+             if debug:
+-                print ("T%d: First note(%s)" % (trackNum, track_desc.FirstNoteClick))
++                print(("T%d: First note(%s)" % (trackNum, track_desc.FirstNoteClick)))
+             trackNum = trackNum + 1
+ 
+     # Close the open file
+@@ -644,8 +644,8 @@
+     midifile.lastNoteMS = lastNoteMS
+ 
+     if debug:
+-        print "first = %s" % (midifile.earliestNoteMS)
+-        print "last = %s" % (midifile.lastNoteMS)
++        print("first = %s" % (midifile.earliestNoteMS))
++        print("last = %s" % (midifile.lastNoteMS))
+ 
+     # Return the populated midiFile structure
+     return midifile
+@@ -655,7 +655,7 @@
+     # Create the new TrackDesc structure
+     track = TrackDesc(trackNum)
+     if debug:
+-        print "Track %d" % trackNum
++        print("Track %d" % trackNum)
+     # Loop through all events in the track, recording salient meta-events and times
+     eventBytes = 0
+     while track.BytesRead < Length:
+@@ -708,12 +708,12 @@
+         bytesRead = bytesRead + 1
+         event = ord(byteStr)
+         if debug:
+-            print "MetaEvent: 0x%X" % event
++            print("MetaEvent: 0x%X" % event)
+         if event == 0x00:
+             # Sequence number (discarded)
+             packet = filehdl.read(2)
+             bytesRead = bytesRead + 2
+-            zero, type = map(ord, packet)
++            zero, type = list(map(ord, packet))
+             if type == 0x02:
+                 # Discard next two bytes as well
+                 discard = filehdl.read(2)
+@@ -722,7 +722,7 @@
+                 pass
+             else:
+                 if debug:
+-                    print ("Invalid sequence number (%d)" % type)
++                    print(("Invalid sequence number (%d)" % type))
+         elif event == 0x01:
+             # Text Event
+             Length, varBytes = varLength(filehdl)
+@@ -732,7 +732,7 @@
+             if Length > 1000:
+                 # This must be a mistake.
+                 if debug:
+-                    print ("Ignoring text of length %s" % (Length))
++                    print(("Ignoring text of length %s" % (Length)))
+             else:
+                 if (midifile.text_encoding != "") :
+                     text = text.decode(midifile.text_encoding, 'replace')
+@@ -741,7 +741,7 @@
+                     and ("%-" not in text) and ("%+" not in text):
+                     track_desc.text_events.recordText(track_desc.TotalClicksFromStart, text)
+                 if debug:
+-                    print ("Text: %s" % (repr(text)))
++                    print(("Text: %s" % (repr(text))))
+         elif event == 0x02:
+             # Copyright (discard)
+             Length, varBytes = varLength(filehdl)
+@@ -755,7 +755,7 @@
+             title = filehdl.read(Length)
+             bytesRead = bytesRead + Length
+             if debug:
+-                print ("Track Title: " + repr(title))
++                print(("Track Title: " + repr(title)))
+             if title == "Words":
+                 track_desc.LyricsTrack = True
+         elif event == 0x04:
+@@ -777,7 +777,7 @@
+                 and ("%-" not in lyric) and ("%+" not in lyric):
+                 track_desc.lyric_events.recordLyric(track_desc.TotalClicksFromStart, lyric)
+             if debug:
+-                print ("Lyric: %s" % (repr(lyric)))
++                print(("Lyric: %s" % (repr(lyric))))
+         elif event == 0x06:
+             # Marker (discard)
+             Length, varBytes = varLength(filehdl)
+@@ -821,14 +821,14 @@
+             # Set Tempo
+             packet = filehdl.read(4)
+             bytesRead = bytesRead + 4
+-            valid, tempoA, tempoB, tempoC = map(ord, packet)
++            valid, tempoA, tempoB, tempoC = list(map(ord, packet))
+             if valid != 0x03:
+                 print ("Error: Invalid tempo")
+             tempo = (tempoA << 16) | (tempoB << 8) | tempoC
+             midifile.Tempo.append((track_desc.TotalClicksFromStart, tempo))
+             if debug:
+                 ms_per_quarter = (tempo/1000)
+-                print ("Tempo: %d (%d ms per quarter note)"% (tempo, ms_per_quarter))
++                print(("Tempo: %d (%d ms per quarter note)"% (tempo, ms_per_quarter)))
+         elif event == 0x54:
+             # SMPTE (discard)
+             packet = filehdl.read(6)
+@@ -837,9 +837,9 @@
+             # Meta Event: Time Signature
+             packet = filehdl.read(5)
+             bytesRead = bytesRead + 5
+-            valid, num, denom, clocks, notes = map(ord, packet)
++            valid, num, denom, clocks, notes = list(map(ord, packet))
+             if valid != 0x04:
+-                print ("Error: Invalid time signature (valid=%d, num=%d, denom=%d)" % (valid,num,denom))
++                print(("Error: Invalid time signature (valid=%d, num=%d, denom=%d)" % (valid,num,denom)))
+             midifile.Numerator = num
+             midifile.Denominator = denom
+             midifile.ClocksPerMetronomeTick = clocks
+@@ -848,9 +848,9 @@
+             # Key signature (discard)
+             packet = filehdl.read(3)
+             bytesRead = bytesRead + 3
+-            valid, sf, mi = map(ord, packet)
++            valid, sf, mi = list(map(ord, packet))
+             if valid != 0x02:
+-                print ("Error: Invalid key signature (valid=%d, sf=%d, mi=%d)" % (valid,sf,mi))
++                print(("Error: Invalid key signature (valid=%d, sf=%d, mi=%d)" % (valid,sf,mi)))
+         elif event == 0x7F:
+             # Sequencer Specific Meta Event
+             Length, varBytes = varLength(filehdl)
+@@ -868,13 +868,13 @@
+             data = filehdl.read(Length)
+             bytesRead = bytesRead + Length
+             if debug:
+-                print ("Sequencer Specific Event (Data Length %d)"%Length)
+-                print ("Manufacturer's ID: " + str(ID))
+-                print ("Manufacturer Data: " + data)
++                print(("Sequencer Specific Event (Data Length %d)"%Length))
++                print(("Manufacturer's ID: " + str(ID)))
++                print(("Manufacturer Data: " + data))
+         else:
+             # Unknown event (discard)
+             if debug:
+-                print ("Unknown meta-event: 0x%X" % event)
++                print(("Unknown meta-event: 0x%X" % event))
+             Length, varBytes = varLength(filehdl)
+             bytesRead = bytesRead + varBytes
+             discard = filehdl.read(Length)
+@@ -902,8 +902,8 @@
+         packet = filehdl.read(2)
+         bytesRead = bytesRead + 2
+         if debug:
+-            c, v = map(ord, packet)
+-            print ("Control: C%d V%d" % (c,v))
++            c, v = list(map(ord, packet))
++            print(("Control: C%d V%d" % (c,v)))
+     elif (event_type & 0xF0) == 0xC0:
+         # Program (patch) change (discard)
+         packet = filehdl.read(1)
+@@ -925,7 +925,7 @@
+         end = ord(end_byte)
+         bytesReadRefactoringTool: Refactored pykaraoke/pykaraoke.py
+ = bytesRead + Length
+         if (end != 0xF7):
+-            print ("Invalid F0 Sysex end byte (0x%X)" % end)
++            print(("Invalid F0 Sysex end byte (0x%X)" % end))
+     elif event_type == 0xF7:
+         # F7 Sysex Event (discard)
+         Length, varBytes = varLength(filehdl)
+@@ -935,7 +935,7 @@
+     else:
+         # Unknown event (discard)
+         if debug:
+-            print ("Unknown event: 0x%x" % event_type)
++            print(("Unknown event: 0x%x" % event_type))
+         Length, varBytes = varLength(filehdl)
+         bytesRead = bytesRead + varBytes
+         discard = filehdl.read(Length)
+@@ -1048,7 +1048,7 @@
+         else:
+             # Load the sound normally for playback.
+             audio_path = self.SongDatas[0].GetFilepath()
+-            if type(audio_path) == unicode:
++            if type(audio_path) == str:
+                 audio_path = audio_path.encode(sys.getfilesystemencoding())
+             pygame.mixer.music.load(audio_path)
+ 
+@@ -1420,7 +1420,7 @@
+ 
+ 
+ def usage():
+-    print "Usage:  %s <kar filename>" % os.path.basename(sys.argv[0])
++    print("Usage:  %s <kar filename>" % os.path.basename(sys.argv[0]))
+ 
+ 
+ # Can be called from the command line with the CDG filepath as parameter
+--- pykaraoke/pykaraoke.py	(original)
++++ pykaraoke/pykaraoke.py	(refactored)
+@@ -142,7 +142,7 @@
+ from pykenv import env
+ import pycdg, pympg, pykar, pykversion, pykdb
+ import codecs
+-import cPickle
++import pickle
+ from pykmanager import manager
+ import random
+ import performer_prompt as PerformerPrompt
+@@ -169,7 +169,7 @@
+         """ Called from time to time to update the progress display. """
+ 
+         cont = self.Update(int(progress * 100), label)
+-        if isinstance(cont, types.TupleType):
++        if isinstance(cont, tuple):
+             # Later versions of wxPython return a tuple from the above.
+             cont, skip = cont
+ 
+@@ -400,7 +400,7 @@
+     # User changed a checkbox, just do them all again
+     def OnFileExtChanged(self, event):
+         ignored_ext_list = []
+-        for ext, cb in self.extCheckBoxes.items():
++        for ext, cb in list(self.extCheckBoxes.items()):
+             if not cb.IsChecked():
+                 ignored_ext_list.append(ext)
+         self.KaraokeMgr.SongDB.Settings.IgnoredExtensions = ignored_ext_list
+@@ -619,7 +619,7 @@
+         gsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
+         self.SampleRate = wx.ComboBox(
+             panel, -1, value = str(settings.SampleRate),
+-            choices = map(str, settings.SampleRates))
++            choices = list(map(str, settings.SampleRates)))
+         gsizer.Add(self.SampleRate, flag = wx.EXPAND)
+ 
+         text = wx.StaticText(panel, -1, "Buffer size (ms):")
+@@ -681,7 +681,7 @@
+         gsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
+         self.MIDISampleRate = wx.ComboBox(
+             panel, -1, value = str(settings.MIDISampleRate),
+-            choices = map(str, settings.SampleRates))
++            choices = list(map(str, settings.SampleRates)))
+         gsizer.Add(self.MIDISampleRate, flag = wx.EXPAND)
+         karsizer.Add(gsizer, flag = wx.EXPAND | wx.LEFT | wx.RIGHT, border = 10)
+ 
+@@ -722,7 +722,7 @@
+         text = wx.StaticText(panel, -1, "Zoom:")
+         hsizer.Add(text, flag = wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border = 5)
+         selection = settings.Zoom.index(settings.CdgZoom)
+-        choices = map(lambda z: '%s: %s' % (z, settings.ZoomDesc[z]), settings.Zoom)
++        choices = ['%s: %s' % (z, settings.ZoomDesc[z]) for z in settings.Zoom]
+         self.CdgZoom = wx.Choice(panel, -1, choices = choices)
+         self.CdgZoom.SetSelection(selection)
+         hsizer.Add(self.CdgZoom, flag = wx.EXPAND, proportion = 1)
+@@ -1613,7 +1613,7 @@
+ 
+         # Populate the tree control, directories then files
+         for item in dir_list:
+-            if isinstance(item, types.StringType):
++            if isinstance(item, bytes):
+                 item = item.decode(settings.FilesystemCoding)
+             try:
+                 node = self.FileTree.AppendIteRefactoringTool: Refactored pykaraoke/pykaraoke_mini.py
+m(root_node, item, image=self.FolderClosedIconIndex)
+@@ -1622,7 +1622,7 @@
+ 
+             self.FileTree.SetItemHasChildren(node, True)
+         for item in file_list:
+-            if isinstance(item, types.StringType):
++            if isinstance(item, bytes):
+                 item = item.decode(settings.FilesystemCoding)
+             try:
+                 node = self.FileTree.AppendItem(root_node, item, image=self.FileIconIndex)
+@@ -1768,7 +1768,7 @@
+         self.extra_data = extra_data
+ 
+         # Pickle both songs and extra_data
+-        self.data = cPickle.dumps((self.songs, self.extra_data))
++        self.data = pickle.dumps((self.songs, self.extra_data))
+ 
+     def GetDataSize(self):
+         """Returns number of bytes required to store the data in the
+@@ -1791,7 +1791,7 @@
+         # Cast the data object explicitly to a str type, in case the
+         # drag-and-drop operation elevated it to a unicode string.
+         self.data = str(data)
+-        self.songs, self.extra_data = cPickle.loads(self.data)
++        self.songs, self.extra_data = pickle.loads(self.data)
+ 
+ # We store the object currently being dragged here, to work around an
+ # apparent bug in wxPython that does not call
+@@ -3782,7 +3782,7 @@
+     # for the GUI thread, actually handled by ErrorPopupEventHandler()
+     def ErrorPopupCallback(self, ErrorString):
+         if not self.gui:
+-            print ErrorString
++            print(ErrorString)
+             return
+         # We use the extra data storage we got by subclassing WxPyEvent to
+         # pass data to the event handler (the error string).
+@@ -3887,7 +3887,7 @@
+ 
+ def main():
+     # Display license
+-    print "PyKaraoke is free software; you can redistribute it and/or\nmodify it under the terms of the GNU Lesser General Public\nLicense as published by the Free Software Foundation; either\nversion 2.1 of the License, or (at your option) any later version.\n\nPyKaraoke is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Lesser General Public License for more details.\n\nYou should have received a copy of the GNU Lesser General Public\nLicense along with this library; if not, write to the Free Software\nFoundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n"
++    print("PyKaraoke is free software; you can redistribute it and/or\nmodify it under the terms of the GNU Lesser General Public\nLicense as published by the Free Software Foundation; either\nversion 2.1 of the License, or (at your option) any later version.\n\nPyKaraoke is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU Lesser General Public License for more details.\n\nYou should have received a copy of the GNU Lesser General Public\nLicense along with this library; if not, write to the Free Software\nFoundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n")
+ 
+     MyApp = PyKaraokeApp(False)
+ 
+--- pykaraoke/pykaraoke_mini.py	(original)
++++ pykaraoke/pykaraoke_mini.py	(refactored)
+@@ -136,7 +136,7 @@
+         try:
+             splash = pygame.image.load(splashFilename)
+         except:
+-            print "Unable to load splash image."
++            print("Unable to load splash image.")
+             return
+ 
+         # Put the version number up there too.
+@@ -500,7 +500,7 @@
+ 
+         pathname = os.path.join (self.songDb.SaveDir, "marked.txt")
+         file = open(pathname, 'w')
+-        markedSongs = self.markedSongs.items()
++        markedSongs = list(self.markedSongs.items())
+         markedSongs.sort()
+         for key, song in markedSongs:
+             line = '%s\t%s\t%s\n' % (song.DisplayFilename, song.Title, song.Artist)
+@@ -885,7 +885,7 @@
+                 self.searchString = self.searchString[:-1]
+                 self.goToSearch(self.searchString)
+                 return
+-            if event.unicode and event.unicode[0] >= ' ':RefactoringTool: No changes to pykaraoke/pykconstants.py
+RefactoringTool: Refactored pykaraoke/pykdb.py
+
++            if event.str and event.str[0] >= ' ':
+                 # The user has typed a keystroke that counts toward a
+                 # search.
+                 if event.key in self.CommandKeys:
+@@ -897,7 +897,7 @@
+                     # haven't already started typing.
+                     pass
+                 else:
+-                    self.searchString += event.unicode
++                    self.searchString += event.str
+                     self.goToSearch(self.searchString)
+                     return
+             if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+@@ -977,7 +977,7 @@
+         pykPlayer.handleEvent(self, event)
+ 
+     def errorPopupCallback(self, errorString, wait = True):
+-        print errorString
++        print(errorString)
+ 
+         manager.InitPlayer(self)
+         manager.OpenDisplay()
+--- pykaraoke/pykdb.py	(original)
++++ pykaraoke/pykdb.py	(refactored)
+@@ -27,9 +27,9 @@
+ from pykconstants import *
+ from pykenv import env
+ import pykar, pycdg, pympg
+-import os, cPickle, zipfile, codecs, sys, time
++import os, pickle, zipfile, codecs, sys, time
+ import types
+-from cStringIO import StringIO
++from io import StringIO
+ try:
+     from hashlib import md5
+ except ImportError:
+@@ -197,7 +197,7 @@
+                 # files the song will still be added to the database. For non-database
+                 # adds we don't care anyway, we just want a SongStruct for passing around.
+                 if DatabaseAdd and settings.ExcludeNonMatchingFilenames:
+-                    raise KeyError, "Excluding non-matching file: %s" % self.Title
++                    raise KeyError("Excluding non-matching file: %s" % self.Title)
+ 
+         # This is a list of other song files that share the same
+         # artist and title data.
+@@ -214,11 +214,11 @@
+ 
+         if ZipStoredName:
+             self.DisplayFilename = os.path.basename(ZipStoredName)
+-            if isinstance(self.DisplayFilename, types.StringType):
++            if isinstance(self.DisplayFilename, bytes):
+                 self.DisplayFilename = self.DisplayFilename.decode(settings.ZipfileCoding)
+         else:
+             self.DisplayFilename = os.path.basename(Filepath)
+-            if isinstance(self.DisplayFilename, types.StringType):
++            if isinstance(self.DisplayFilename, bytes):
+                 self.DisplayFilename = self.DisplayFilename.decode(settings.FilesystemCoding)
+ 
+         # Check the file type based on extension.
+@@ -245,27 +245,27 @@
+                 if len(filepath.split("-")) == 4:
+                     title = filepath.split("-")[3] # Find the Title in the filename
+                 else:
+-                    raise KeyError, "Invalid type for file: %s!" % filepath
++                    raise KeyError("Invalid type for file: %s!" % filepath)
+             elif settings.CdgFileNameType == 1: # DiscTrack-Artist-Title.Ext
+                 # Make sure we can parse the filepath
+                 if len(filepath.split("-")) == 3:
+                     title = filepath.split("-")[2] # Find the Title in the filename
+                 else:
+-                    raise KeyError, "Invalid type for file: %s!" % filepath
++                    raise KeyError("Invalid type for file: %s!" % filepath)
+             elif settings.CdgFileNameType == 2: # Disc-Artist-Title.Ext
+                 # Make sure we can parse the filepath
+                 if len(filepath.split("-")) == 3:
+                     title = filepath.split("-")[2] # Find the Title in the filename
+                 else:
+-                    raise KeyError, "Invalid type for file: %s!" % filepath
++                    raise KeyError("Invalid type for file: %s!" % filepath)
+             elif settings.CdgFileNameType == 3: # Artist-Title.Ext
+                 # Make sure we can parse the filepath
+                 if len(filepath.split("-")) == 2:
+                     title = filepath.split("-")[1] # Find the Title in the filename
+                 else:
+-                    raise KeyError, "Invalid type for file: %s!" % filepath
++                    raise KeyError("Invalid type for file: %s!" % filepath)
+             else:
+-                raise KeyError, "File name type is invalid!"
++                raise KeyError("File name type is invalid!")
+             # Remove the first and last space
+             title = title.strip(" ")
+             # Remove the filename extension
+@@ -288,7 +288,7 @@
+                 artist = filepath.split("-")[0] # Find the Artist in the filename
+                 artist = os.path.basename(artist)
+             else:
+-                raise KeyError, "File name type is invalid!"
++                raise KeyError("File name type is invalid!")
+             # Remove the first and last space
+             artist = artist.strip(" ")
+         #print "Artist parsed: %s" % artist
+@@ -308,7 +308,7 @@
+             elif settings.CdgFileNameType == 3: # Artist-Title.Ext
+                 disc = ''
+             else:
+-                raise KeyError, "File name type is invalid!"
++                raise KeyError("File name type is invalid!")
+             # Remove the first and last space
+             disc = disc.strip(" ")
+             # Remove the filename path
+@@ -330,7 +330,7 @@
+             elif settings.CdgFileNameType == 3: # Artist-Title.Ext
+                 track = ''
+             else:
+-                raise KeyError, "File name type is invalid!"
++                raise KeyError("File name type is invalid!")
+             # Remove the first and last space
+             #track = track.strip(" ")
+         #print "Track parsed: %s" % track
+@@ -441,7 +441,7 @@
+                     data = zip.read(file)
+                     songDatas.append(SongData(file, data))
+                 except:
+-                    print "Error in ZIP containing " + file
++                    print("Error in ZIP containing " + file)
+         else:
+             # A non-zipped file; this is an easy case.
+             songDatas.append(SongData(self.Filepath, None))
+@@ -456,11 +456,11 @@
+                 # Handle potential byte-strings with invalid characters
+                 # that startswith() will not handle.
+                 try:
+-                    file = unicode(file)
++                    file = str(file)
+                 except UnicodeDecodeError:
+                     file = file.decode("ascii", "replace")
+                 try:
+-                    prefix = unicode(prefix)
++                    prefix = str(prefix)
+                 except UnicodeDecodeError:
+                     prefix = prefix.decode("ascii", "replace")
+ 
+@@ -527,7 +527,7 @@
+         as a single comma-delimited string. """
+ 
+         if self.sameSongs:
+-            return ', '.join(map(lambda f: f.DisplayFilename, self.sameSongs))
++            return ', '.join([f.DisplayFilename for f in self.sameSongs])
+         return self.DisplayFilename
+ 
+     def getTypeSort(self):
+@@ -631,8 +631,7 @@
+                 name2 = name1[:-len(n)] + n
+ 
+         if len(name1) != len(name2):
+-            raise RuntimeError, \
+-                  "Cannot change length of name with rename()."
++            raise RuntimeError("Cannot change length of name with rename().")
+ 
+         filepos = zip.fp.tell()
+ 
+@@ -651,7 +650,7 @@
+             try:
+                 catalogFile = open(catalogPathname, "rU")
+             except:
+-                print "Could not open titles file %s" % (repr(catalogPathname))
++                print("Could not open titles file %s" % (repr(catalogPathname)))
+                 return
+ 
+         for line in catalogFile:
+@@ -659,7 +658,7 @@
+                 line = line.decode('utf-8').strip()
+             except UnicodeDecodeError:
+                 line = line.decode('utf-8', 'replace')
+-                print "Invalid characters in %s:\n%s" % (repr(catalogPathname), line)
++                print("Invalid characters in %s:\n%s" % (repr(catalogPathname), line))
+ 
+             if line:
+                 tuple = line.split('\t')
+@@ -669,7 +668,7 @@
+                 elif len(tuple) == 3:
+                     filename, title, artist = tuple
+                 else:
+-                    print "Invalid line in %s:\n%s" % (repr(catalogPathname), line)
++                    print("Invalid line in %s:\n%s" % (repr(catalogPathname), line))
+                     continue
+ 
+                 # Allow a forward slash in the file to stand in for
+@@ -679,7 +678,7 @@
+                 pathname = os.path.join(dirname, filename)
+                 song = songDb.filesByFullpath.get(pathname, None)
+                 if song is None:
+-                    print "Unknown file in %s:\n%s" % (repr(catalogPathname), repr(filename))
++                    print("Unknown file in %s:\n%s" % (repr(catalogPathname), repr(filename)))
+                 else:
+                     song.titles = self
+                     self.songs.append(song)
+@@ -724,7 +723,7 @@
+             try:
+                 catalogFile = open(catalogPathname, "w")
+             except:
+-                print "Could not rewrite titles file %s" % (repr(catalogPathname))
++                print("Could not rewrite titles file %s" % (repr(catalogPathname)))
+                 return
+ 
+         relTo = os.path.normcase(os.path.normpath(catalogPathname))
+@@ -1161,7 +1160,7 @@
+                     value = eval(value)
+                 except:
+                     # Ignore anything that isn't valid Python.
+-                    print "Invalid value for %s" % (key)
++                    print("Invalid value for %s" % (key))
+                     continue
+ 
+                 setattr(loadsettings, key, value)
+@@ -1178,7 +1177,7 @@
+                 if errorCallback:
+                     errorCallback(message)
+                 else:
+-                    print message
++                    print(message)
+ 
+     def LoadDatabase(self, errorCallback):
+         """ Load the saved database. """
+@@ -1195,7 +1194,7 @@
+             file = open (db_filepath, "rb")
+             loaddb = None
+             try:
+-                loaddb = cPickle.load (file)
++                loaddb = pickle.load (file)
+             except:
+                 pass
+             if (getattr(loaddb, 'Version', None) == DATABASE_VERSION):
+@@ -1228,18 +1227,18 @@
+         settings_filepath = os.path.join (self.SaveDir, "settings.dat")
+         try:
+             file = open (settings_filepath, "w")
+-        except IOError, message:
+-            print message
++        except IOError as message:
++            print(message)
+         else:
+             # We don't use pickle to dump out the settings anymore.
+             # Instead, we write them in this human-readable and
+             # human-editable format.
+-            keys = self.Settings.__dict__.keys()
++            keys = list(self.Settings.__dict__.keys())
+             keys.sort()
+             for k in keys:
+                 if not k.startswith('__'):
+                     value = getattr(self.Settings, k)
+-                    print >> file, "%s = %s" % (k, repr(value))
++                    print("%s = %s" % (k, repr(value)), file=file)
+ 
+     def SaveDatabase(self):
+         """ Save the database to the appropriate directory. """
+@@ -1272,9 +1271,9 @@
+             loaddb.GotTitles = self.GotTitles
+             loaddb.GotArtists = self.GotArtists
+ 
+-            cPickle.dump (loaddb, file, cPickle.HIGHEST_PROTOCOL)
+-        except IOError, message:
+-            print message
++            pickle.dump (loaddb, file, pickle.HIGHEST_PROTOCOL)
++        except IOError as message:
++            print(message)
+         self.databaseDirty = False
+ 
+     def GetSong(self, index):
+@@ -1399,7 +1398,7 @@
+         try:
+             filedir_list = os.listdir(FolderToScan)
+         except:
+-            print "Couldn't scan %s" % (repr(FolderToScan))
++            print("Couldn't scan %s" % (repr(FolderToScan)))
+             return False
+ 
+         # Sort the list, using printable strings for the sort key to
+@@ -1421,7 +1420,7 @@
+             # is still unicode.
+             if (type(FolderToScan) != type(item)):
+                 full_path = os.path.join(str(FolderToScan), str(item))
+-                print "Folder %s and file %s do not match types" % (repr(FolderToScan), repr(item))
++                print("Folder %s and file %s do not match types" % (repr(FolderToScan), repr(item)))
+             else:
+                 full_path = os.path.join(FolderToScan, item)
+ 
+@@ -1459,7 +1458,7 @@
+             basename = os.path.split(full_path)[1]
+             # Sanitise byte-strings
+             try:
+-                basename = unicode(basename)
++                basename = str(basename)
+             except UnicodeDecodeError:
+                 basename = basename.decode("ascii", "replace")
+             self.BusyDlg.SetProgress(
+@@ -1489,7 +1488,7 @@
+                 try:
+                     self.addSong(SongStruct(full_path, self.Settings, DatabaseAdd = True))
+                 except KeyError:
+-                    print "Excluding filename with unexpected format: %s " % repr(os.path.basename(full_path))
++                    print("Excluding filename with unexpected format: %s " % repr(os.path.basename(full_path)))
+             # Look inside ZIPs if configured to do so
+             elif self.Settings.LookInsideZips and ext.lower() == ".zip":
+                 try:
+@@ -1506,7 +1505,7 @@
+                                 basename = os.path.split(full_path)[1]
+                                 # Sanitise byte-strings
+                                 try:
+-                                    basename = unicode(basename)
++                                    basename = str(basename)
+                                 except UnicodeDecodeError:
+                                     basename = basename.decode("ascii", "replace")
+                                 self.BusyDlg.SetProgress(
+@@ -1527,13 +1526,13 @@
+                                     try:
+                                         self.addSong(SongStruct(full_path, self.Settings, ZipStoredName = filename, DatabaseAdd = True))
+                                     except KeyError:
+-                                        print "Excluding filename with unexpected format: %s " % repr(os.path.basename(full_path))
++                                        print("Excluding filename with unexpected format: %s " % repr(os.path.basename(full_path)))
+                                 else:
+-                                    print ("ZIP member compressed with unsupported type (%d): %s"%(info.compress_type, repr(full_path)))
++                                    print(("ZIP member compressed with unsupported type (%d): %s"%(info.compress_type, repr(full_path))))
+                     else:
+-                        print "Cannot parse ZIP file: " + repr(full_path)
++                        print("Cannot parse ZIP file: " + repr(full_path))
+                 except:
+-                    print "Error looking inside zip " + repr(full_path)
++                    print("Error looking inside zip " + repr(full_path))
+ 
+     # Add a folder to the database search list
+     def FolderAdd (self, FolderPath):
+@@ -1578,7 +1577,7 @@
+                        (term not in LowerPath):
+                         misses = misses + 1
+                 except UnicodeDecodeError:
+-                    print "Unicode error looking up %s in %s" % (repr(term), repr(LowerZipName))
++                    print("Unicode error looking up %s in %s" % (repr(term), repr(LowerZipName)))
+                     misses = misses + 1 
+             if misses == 0:
+                 ResultsList.append(song)
+@@ -1822,10 +1821,10 @@
+         # Remove the identical files from the database.  If specified,
+         # remove them from disk too.
+         removeIndexes = {}
+-        for list in fileHashes.values():
++        for list in list(fileHashes.values()):
+             if len(list) > 1:
+-                filenames = map(lambda i: self.FullSongList[i].DisplayFilename, list)
+-                print "Identical songs: %s" % repr((', '.join(filenames)))
++                filenames = [self.FullSongList[i].DisplayFilename for i in list]
++                print("Identical songs: %s" % repr((', '.join(filenames))))
+                 for i in list[1:]:
+                     extra = self.FullSongList[i]
+                     removeIndexes[i] = True
+@@ -1865,7 +1864,7 @@
+         # Now go through and sort each songList into order by type.RefactoringTool: No changes to pykaraoke/pykenv.py
+RefactoringTool: Refactored pykaraoke/pykmanager.py
+RefactoringTool: Refactored pykaraoke/pykplayer.py
+
+ 
+         self.UniqueSongList = []
+-        for songList in songsByArtistTitle.values():
++        for songList in list(songsByArtistTitle.values()):
+             songList.sort(key = SongStruct.getTypeSort)
+             for song in songList:
+                 song.sameSongs = songList
+--- pykaraoke/pykmanager.py	(original)
++++ pykaraoke/pykmanager.py	(refactored)
+@@ -70,11 +70,11 @@
+ 
+         if env == ENV_GP2X:
+             speed = cpuctrl.get_FCLK()
+-            print "Initial CPU speed is %s" % (speed)
++            print("Initial CPU speed is %s" % (speed))
+             x, y, tvout = cpuctrl.get_screen_info()
+-            print "Initial screen size is %s, %s" % (x, y)
++            print("Initial screen size is %s, %s" % (x, y))
+             if tvout:
+-                print "TV-Out mode is enabled."
++                print("TV-Out mode is enabled.")
+ 
+         # This factor may be changed by the user to make text bigger
+         # or smaller on those players that support it.
+@@ -105,7 +105,7 @@
+         try:
+             volume = pygame.mixer.music.get_volume()
+         except pygame.error:
+-            print "Failed to raise music volume!"
++            print("Failed to raise music volume!")
+             return
+         volume = min(volume + 0.1, 1.0)
+ 
+@@ -115,7 +115,7 @@
+         try:
+             volume = pygame.mixer.music.get_volume()
+         except pygame.error:
+-            print "Failed to lower music volume!"
++            print("Failed to lower music volume!")
+             return
+         volume = max(volume - 0.1, 0.0)
+ 
+@@ -123,7 +123,7 @@
+ 
+     def GetVolume(self):
+         """ Gives the current volume level. """
+-        if vars().has_key('music'):
++        if 'music' in vars():
+             return pygame.mixer.music.get_volume()
+         else:
+             return 0.50 # 75% is the industry recommended maximum value
+@@ -316,7 +316,7 @@
+ 
+     def __errorCallback(self, message):
+         self.songValid = False
+-        print message
++        print(message)
+     def __doneCallback(self):
+         pass
+ 
+@@ -338,10 +338,10 @@
+                     self.songValid = False
+ 
+             if self.songValid:
+-                print '%s ok' % (song.DisplayFilename)
++                print('%s ok' % (song.DisplayFilename))
+             else:
+-                print '%s invalid' % (song.DisplayFilename)
+-                print >> invalidFile, '%s\t%s' % (song.Filepath, song.ZipStoredName)
++                print('%s invalid' % (song.DisplayFilename))
++                print('%s\t%s' % (song.Filepath, song.ZipStoredName), file=invalidFile)
+                 invalidFile.flush()
+ 
+     def Poll(self):
+@@ -423,7 +423,7 @@
+ 
+         parser.add_option('', '--zoom', metavar='MODE', dest = 'zoom_mode', type = 'choice',
+                           choices = settings.Zoom,
+-                          help = 'specify the way in which graphics are scaled to fit the window.  The choices are %s.' % (', '.join(map(lambda z: '"%s"' % z, settings.Zoom))),
++                          help = 'specify the way in which graphics are scaled to fit the window.  The choices are %s.' % (', '.join(['"%s"' % z for z in settings.Zoom])),
+                           default = settings.CdgZoom)
+ 
+         parser.add_option('', '--buffer', dest = 'buffer', metavar = 'MS', type = 'int',
+--- pykaraoke/pykplayer.py	(original)
++++ pykaraoke/pykplayer.py	(refactored)
+@@ -67,7 +67,7 @@
+         if manager.options.dump:
+             manager.options.nomusic = True
+ 
+-        if isinstance(song, types.StringTypes):
++        if isinstance(song, (str,)):
+             # We were given a filename.  Convert it to a SongStruct.
+             song = self.songDb.makeSongStruct(song)
+         
+@@ -281,7 +281,7 @@
+             filename = self.dumpFilename
+         else:
+             filename = self.dumpFilename % self.PlayFrame
+-            print filename
++            print(filename)
+ 
+         if self.dumpPPM:
+             # Dump a PPM file.  We do PPM by hand since pygame
+@@ -376,13 +376,13 @@
+             # restore them to sync.
+             elif self.State == STATE_PLAYING RefactoringTool: No changes to pykaraoke/pykversion.py
+RefactoringTool: Refactored pykaraoke/pympg.py
+RefactoringTool: Refactored pykaraoke/setup.py
+RefactoringTool: Files that were modified:
+RefactoringTool: pykaraoke/performer_prompt.py
+RefactoringTool: pykaraoke/pycdg.py
+RefactoringTool: pykaraoke/pycdgAux.py
+RefactoringTool: pykaraoke/pykar.py
+RefactoringTool: pykaraoke/pykaraoke.py
+RefactoringTool: pykaraoke/pykaraoke_mini.py
+RefactoringTool: pykaraoke/pykconstants.py
+RefactoringTool: pykaraoke/pykdb.py
+RefactoringTool: pykaraoke/pykenv.py
+RefactoringTool: pykaraoke/pykmanager.py
+RefactoringTool: pykaraoke/pykplayer.py
+RefactoringTool: pykaraoke/pykversion.py
+RefactoringTool: pykaraoke/pympg.py
+RefactoringTool: pykaraoke/setup.py
+RefactoringTool: Warnings/messages while refactoring:
+RefactoringTool: ### In file pykaraoke/pycdg.py ###
+RefactoringTool: Line 237: could not convert: raise 'NoSoundFile'
+RefactoringTool: Python 3 does not support string exceptions
+and event.key == pygame.K_RIGHT and event.mod & (pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                 manager.settings.SyncDelayMs += 250
+-                print "sync %s" % manager.settings.SyncDelayMs
++                print("sync %s" % manager.settings.SyncDelayMs)
+             elif self.State == STATE_PLAYING and event.key == pygame.K_LEFT and event.mod & (pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                 manager.settings.SyncDelayMs -= 250
+-                print "sync %s" % manager.settings.SyncDelayMs
++                print("sync %s" % manager.settings.SyncDelayMs)
+             elif self.State == STATE_PLAYING and event.key == pygame.K_DOWN and event.mod & (pygame.KMOD_LCTRL | pygame.KMOD_RCTRL):
+                 manager.settings.SyncDelayMs = 0
+-                print "sync %s" % manager.settings.SyncDelayMs
++                print("sync %s" % manager.settings.SyncDelayMs)
+ 
+             if self.SupportsFontZoom:
+                 if event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS or \
+--- pykaraoke/pympg.py	(original)
++++ pykaraoke/pympg.py	(refactored)
+@@ -141,7 +141,7 @@
+ 
+         # Open the Movie module
+         filepath = self.SongDatas[0].GetFilepath()
+-        if type(filepath) == unicode:
++        if type(filepath) == str:
+             filepath = filepath.encode(sys.getfilesystemencoding())
+         self.Movie = pygame.movie.Movie(filepath)
+         self.Movie.set_display(manager.display, (0, 0, manager.displaySize[0], manager.displaySize[1]))
+--- pykaraoke/setup.py	(original)
++++ pykaraoke/setup.py	(refactored)
+@@ -206,8 +206,8 @@
+             # specified '/' or some equally foolish directory as the
+             # dist directory.)
+             if os.path.exists(self.dist_dir):
+-                print "Error, the directory %s already exists." % (self.dist_dir)
+-                print "Please remove it before starting this script."
++                print("Error, the directory %s already exists." % (self.dist_dir))
++                print("Please remove it before starting this script.")
+                 sys.exit(1)
+ 
+             # Override py2exe's isSystemDLL because it erroneously
+@@ -223,7 +223,7 @@
+                 'makensis' : self.makensis,
+                 'version' : pykversion.PYKARAOKE_VERSION_STRING,
+                 }
+-            print cmd
++            print(cmd)
+             os.system(cmd)
+ 
+             # Now that we've got an installer, we can empty the dist
+@@ -240,7 +240,7 @@
+                             os.remove(pathname)
+                         except:
+                             # Try to make it writable first, then remove it.
+-                            os.chmod(pathname, 0666)
++                            os.chmod(pathname, 0o666)
+                             os.remove(pathname)
+ 
+                     for name in dirs:
