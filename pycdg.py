@@ -203,6 +203,9 @@ TILES_PER_COL           = 4
 TILE_WIDTH              = CDG_DISPLAY_WIDTH / TILES_PER_ROW
 TILE_HEIGHT             = CDG_DISPLAY_HEIGHT / TILES_PER_COL
 
+class NoSoundFile(Exception):
+    pass
+
 # cdgPlayer Class
 class cdgPlayer(pykPlayer):
     # Initialise the player instace
@@ -234,7 +237,7 @@ class cdgPlayer(pykPlayer):
             if not soundFileData:
                 ErrorString = "There is no mp3 or ogg file to match " + self.Song.DisplayFilename
                 self.ErrorNotifyCallback (ErrorString)
-                raise 'NoSoundFile'
+                raise NoSoundFile
 
         self.cdgFileData = self.SongDatas[0]
         self.soundFileData = soundFileData
